@@ -1,66 +1,70 @@
 # 🏷️ Thrift Scout
 
-**Scan anything at the thrift store. Know instantly if it's worth buying.**
+Scan any thrift find with your phone and know in seconds if it's worth buying — live eBay sold comps, full ROI math, and platform listing drafts, all in one shot.
 
-- 📸 Point your camera, get an AI appraisal with live eBay sold comps in seconds
-- 💰 Real resale ROI math against the tag price — before you put it in your cart
-- 📝 Platform listing drafts for eBay, Poshmark, Mercari, and Facebook ready to copy
+![License](https://img.shields.io/badge/license-MIT-blue)
+![GitHub Pages](https://img.shields.io/badge/hosted-GitHub%20Pages-222?logo=github)
+![Built with Claude](https://img.shields.io/badge/built%20with-Claude%20Sonnet-blueviolet)
+
+- 📸 Point your camera at any item and get a buy/pass verdict with live eBay sold comps in under 10 seconds
+- 💰 Full margin math against the tag price you paid — ROI %, break-even max, and shipping risk before you commit
+- 📝 Platform listing drafts for eBay, Poshmark, Mercari, and Facebook ready to copy the moment you decide to buy
 
 ---
 
 ## ✨ Features
 
 ### Core Appraisal
-- 📸 **Camera scan** — Capture any item directly from your phone
-- 🤖 **AI appraisal** — Vision analysis powered by Claude (claude-sonnet-4-6)
-- 📊 **Live eBay comps** — Real-time sold listings with LIVE/EST badge
-- 🏷️ **Swing-ticket verdict** — Buy / Keep / Gift / Pass with 1-5 confidence rating
-- 🔁 **Dupe detector** — Flags if you've scanned something similar this session
+- 📸 **Camera scan** — Captures any item from your phone; reads condition, brand, and model from the photo
+- 🤖 **AI appraisal** — Returns estimated retail value, resale range, and a 1-5 confidence rating
+- 📊 **Live eBay comps** — Pulls real sold listings in real time, labeled LIVE or EST so you know the source
+- 🏷️ **Swing-ticket verdict** — Delivers a Buy / Keep / Gift / Pass call in a scannable ticket UI
+- 🔁 **Dupe detector** — Flags when you've already scanned something similar this session
 
 ### Buying Intelligence
-- 🎯 **Intent selector** — Switch between Resell / Keep / Gift to reframe the verdict
-- 💰 **ROI calculator** — Full margin math against what you actually paid
-- 🎨 **Color-tag sale bar** — Tap a tag color and all margin math updates automatically
-- 💲 **Break-even calculator** — Max tag price to hit your target ROI
-- 🚩 **Red flag detector** — Flags damage, fakes, or low sell-through risk
-- 📦 **Shipping risk estimate** — Size/weight impact on your margin
-- 🎁 **Lot & seasonal notes** — Bundle tips and timing signals
+- 🎯 **Intent selector** — Switch between Resell / Keep / Gift to reframe the verdict and math for your actual goal
+- 💰 **ROI calculator** — Computes net margin against what you paid, accounting for fees and shipping
+- 🎨 **Color-tag sale bar** — Tap a tag color and every margin number updates automatically for that discount
+- 💲 **Break-even calculator** — Shows the max you can pay and still hit your target ROI
+- 🚩 **Red flag detector** — Flags damage, fakes, missing parts, and low sell-through categories before you buy
+- 📦 **Shipping risk estimate** — Estimates size and weight impact on your margin before you commit
+- 🎁 **Lot & seasonal notes** — Suggests bundle opportunities and timing signals per item
 
 ### Listing Tools
-- 📝 **Platform listing drafts** — Tabbed view: eBay, Poshmark, Mercari, Facebook
-- 💡 **Per-platform tips** — What to emphasize on each marketplace
-- 🏆 **Best venue picker** — Recommends the right platform per item
-- 📅 **Best day to list** — Category-specific timing recommendations
-- ✅ **Cross-list checklist** — Everything to prep before posting
+- 📝 **Platform listing drafts** — Generates title, description, and price for eBay, Poshmark, Mercari, and Facebook in one tap
+- 💡 **Per-platform tips** — Tells you what to emphasize on each marketplace for this specific item
+- 🏆 **Best venue picker** — Recommends the single highest-ROI platform for each item
+- 📅 **Best day to list** — Category-specific timing so your listing goes live when buyers are looking
+- ✅ **Cross-list checklist** — Everything to prep before you post, so nothing gets missed
 
 ### Photo Tools
-- 📷 **4-slot photo panel** — Main / Detail / Damage / Clean BG
-- ⭐ **Photo quality scorer** — AI rates your shot 0-100 with improvement tips
-- 🖼️ **Background analyzer** — Flags clutter before you list
+- 📷 **4-slot photo panel** — Dedicated slots for Main, Detail, Damage, and Clean Background shots
+- ⭐ **Photo quality scorer** — Rates your shot 0-100 and tells you exactly what to fix
+- 🖼️ **Background analyzer** — Flags clutter and distractions before your listing goes live
 
 ### Session & P&L Tracking
-- 🗂️ **Swipe review** — Keep / Pass / Maybe on your full scan history
-- 💼 **Trip P&L** — Net profit per session with CSV export
-- 📈 **Co-pilot panel** — Hit rate, avg ROI, top category, comp accuracy %
-- 💾 **Persistent storage** — Scan history and P&L survive browser refreshes
-- 📊 **True P&L panel** — Days-on-market tracker and sell-price confirmation log
+- 🗂️ **Swipe review** — Keep / Pass / Maybe on every scan from the session before you check out
+- 💼 **Trip P&L** — Net profit per session with one-tap CSV export
+- 📈 **Co-pilot panel** — Tracks your hit rate, avg ROI, top category, and comp accuracy over time
+- 💾 **Persistent storage** — Scan history and P&L survive browser refreshes via localStorage
+- 📊 **True P&L panel** — Days-on-market tracker and sell-price confirmation log to measure actual vs estimated comps
 
 ---
 
 ## 🚀 Live Demo
 
 👉 **[ohsusannamarie.github.io/thrift-scout](https://ohsusannamarie.github.io/thrift-scout)**
-<!-- 
----
 
+---
+<!--
 ## 📱 Screenshots
 
-| Scan & Appraise | Verdict Card | Live eBay Comps | Trip P&L |
+| Scan & Verdict | Live eBay Comps | Listing Drafts | Trip P&L |
 |---|---|---|---|
-| ![scan](screenshots/scan.png) | ![verdict](screenshots/verdict.png) | ![comps](screenshots/comps.png) | ![pl](screenshots/pl.png) |
--->
----
+| ![verdict](screenshots/verdict.png) | ![comps](screenshots/comps.png) | ![listing](screenshots/listing.png) | ![pl](screenshots/pl.png) |
 
+---
+-->
 ## 🛠️ Tech Stack
 
 | Layer | Tech |
@@ -76,18 +80,17 @@
 
 ## ⚙️ Setup
 
-1. Clone the repo
 ```bash
-   git clone https://github.com/ohsusannamarie/thrift-scout.git
+git clone https://github.com/ohsusannamarie/thrift-scout.git
 ```
 
-2. Open `index.html` in your browser
+Open `index.html` in your browser. No build step, no server, no dependencies.
 
 ---
 
 ## 📄 License
 
-MIT — use freely, attribution appreciated.
+[MIT](LICENSE) — use freely, attribution appreciated.
 
 ---
 
@@ -98,4 +101,4 @@ MIT — use freely, attribution appreciated.
 
 ---
 
-*For everyone who has ever stood in a Goodwill aisle wondering if that thing is worth $4.99.*
+*For everyone who has ever stood in a Goodwill aisle holding something weird, wondering if that thing is worth $4.99.*
