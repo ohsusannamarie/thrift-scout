@@ -606,7 +606,37 @@ function iColor(i){return i==='keep'?'keep':i==='gift'?'gift':'flip';}
 function pips(n,cv){n=Math.max(0,Math.min(5,parseInt(n)||0));var s='';for(var i=1;i<=5;i++)s+='<span class="pip '+(i<=n?'on':'')+'" style="color:var(--'+cv+')"></span>';return s;}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 function showToast(msg,dur){dur=dur||2200;toastEl.textContent=msg;toastEl.classList.remove('hidden');clearTimeout(toastEl._t);toastEl._t=setTimeout(function(){toastEl.classList.add('hidden');},dur);}
-function resizeImage(file,maxDim){maxDim=maxDim||1100;return new Promise(function(res,rej){var rd=new FileReader();rd.onload=function(){var img=new Image();img.onload=function(){var w=img.width,h=img.height;if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.82));};img.onerror=rej;img.src=rd.result;};rd.onerror=rej;rd.readAsDataURL(file);});}
+function resizeImage(file,maxDim){
+  maxDim=maxDim||1100;
+  return new Promise(function(res,rej){
+    function drawFromSrc(src){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width,h=img.height;
+        if(!w||!h){rej(new Error('Image has no dimensions'));return;}
+        if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+        else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+        var c=document.createElement('canvas');
+        c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',0.82));
+        if(src.startsWith('blob:'))URL.revokeObjectURL(src);
+      };
+      img.onerror=function(){
+        if(src.startsWith('blob:'))URL.revokeObjectURL(src);
+        rej(new Error('Could not load image. Try a different photo.'));
+      };
+      img.src=src;
+    }
+    var rd=new FileReader();
+    rd.onload=function(){drawFromSrc(rd.result);};
+    rd.onerror=function(){
+      try{drawFromSrc(URL.createObjectURL(file));}
+      catch(e){rej(new Error('Could not read image file.'));}
+    };
+    rd.readAsDataURL(file);
+  });
+}
 
 function bestDayToList(category){
   var cat=(category||'').toLowerCase();
@@ -676,7 +706,7 @@ function buildPrompt(intentMode,tagDiscount){
 // ── fetch appraisal + comps ──
 function fetchWithComps(base64,intentMode,tagDiscount){
   return fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
+    method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,
       messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
@@ -691,7 +721,7 @@ function fetchWithComps(base64,intentMode,tagDiscount){
     catch(e){var m=clean.match(/\{[\s\S]*\}/);if(m)appraisal=JSON.parse(m[0]);else throw new Error("Couldn't parse result. Try a clearer photo.");}
 
     return fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,
         tools:[{type:'web_search_20250305',name:'web_search'}],
         messages:[{role:'user',content:'Search eBay sold listings for: '+((appraisal.item||appraisal.category||'thrift item')+' sold site:ebay.com')+'\nReturn ONLY a JSON array of up to 4 comps:\n[{"title":"title","price":14.99,"sold_days_ago":5,"source":"eBay"}]\nNo markdown. Just the array.'}]})
@@ -753,7 +783,7 @@ function handleBatch(files){
           completed++;
           if(isBatch){var lbl=$(batchId+'-label');if(lbl){if(completed===files.length){lbl.textContent=files.length+' items scanned';var dot=$(batchId+'-dot');if(dot)dot.style.animation='none';}else lbl.textContent=completed+' of '+files.length+' done...';}}
         });
-      }).catch(function(err){slot.innerHTML='<div class="err" style="margin-top:12px;">'+(file.name||'Item')+': '+(err.message||'Analysis failed')+'<br><button onclick="this.closest(\'.err\').remove()">Dismiss</button></div>';completed++;});
+      }).catch(function(err){var msg=err.message||'Analysis failed. Check your connection and try again.';slot.innerHTML='<div class="err" style="margin-top:12px;">'+msg+'<br><button onclick="this.closest(\'.err\').remove()">Dismiss</button></div>';completed++;});
     };
     pr.readAsDataURL(file);
   });
