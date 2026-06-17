@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Thrift Scout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f4f2;--surface:#fff;--ink:#13151a;--mute:#686e7a;
+  --line:#e2e4e0;--line2:#cdd0ca;
+  --flip:#0d7a4e;--flip-bg:#e5f4ed;
+  --keep:#1a5fb4;--keep-bg:#e4eef9;
+  --gift:#8b3fc8;--gift-bg:#f1e8fb;
+  --skip:#c0392b;--skip-bg:#fbeae8;
+  --amber:#886000;--amber-bg:#fff3cc;
+  --dupe:#c05a00;--dupe-bg:#fff0e0;
+  --sh:0 1px 3px rgba(19,21,26,.05),0 8px 24px rgba(19,21,26,.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+html,body{min-height:100vh;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+#app{max-width:560px;margin:0 auto;padding:0 15px 72px;}
+
+/* ── header ── */
+header{position:sticky;top:0;z-index:30;background:rgba(243,244,242,.93);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -15px;padding:11px 15px 10px;}
+.hrow{display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;flex:none;}
+.logo svg{width:18px;height:18px;}
+.appname{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;}
+.ver{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);margin-top:3px;}
+.hbtns{display:flex;gap:6px;}
+.hbtn{background:none;border:1.5px solid var(--line2);border-radius:8px;padding:5px 10px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--mute);cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.hbtn svg{width:13px;height:13px;}
+.hbtn.active{border-color:var(--flip);color:var(--flip);background:var(--flip-bg);}
+
+/* ── onboarding modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(19,21,26,.6);z-index:50;display:flex;align-items:flex-end;justify-content:center;}
+.modal{width:100%;max-width:560px;background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 36px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;margin-bottom:6px;}
+.modal-sub{font-size:14px;color:var(--mute);line-height:1.55;margin-bottom:20px;}
+.modal-label{font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin-bottom:8px;}
+.modal-section{margin-bottom:20px;}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.cat-chip{border:1.5px solid var(--line2);border-radius:10px;padding:9px 6px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--mute);cursor:pointer;text-align:center;background:var(--surface);transition:all .12s ease;line-height:1.3;}
+.cat-chip.sel{border-color:var(--flip);color:var(--flip);background:var(--flip-bg);}
+.roi-row{display:flex;align-items:center;gap:10px;}
+.roi-input{flex:1;background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:11px 13px;font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--ink);}
+.roi-unit{font-family:'Space Mono',monospace;font-size:13px;color:var(--mute);}
+.mode-row{display:flex;gap:8px;}
+.mode-btn{flex:1;border:1.5px solid var(--line2);border-radius:10px;padding:10px 8px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--mute);cursor:pointer;text-align:center;background:var(--surface);transition:all .12s ease;}
+.mode-btn.sel{border-color:var(--keep);color:var(--keep);background:var(--keep-bg);}
+.modal-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:12px;padding:15px;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px;}
+
+/* ── scan zone ── */
+.scan-zone{margin-top:14px;display:flex;flex-direction:column;gap:9px;}
+.scan-btn{width:100%;border:none;cursor:pointer;background:var(--ink);color:#fff;border-radius:14px;padding:17px;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 14px rgba(19,21,26,.18);transition:transform .1s ease;}
+.scan-btn:active{transform:scale(.985);}
+.scan-btn svg{width:20px;height:20px;color:#6ee7a8;}
+.scan-row{display:flex;gap:8px;}
+.scan-sec{flex:1;background:var(--surface);border:1px solid var(--line2);border-radius:11px;padding:10px 6px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.scan-sec svg{width:13px;height:13px;}
+.scan-sec:active{background:var(--bg);}
+
+/* ── intent bar ── */
+.intent-label{font-size:10px;font-family:'Space Mono',monospace;text-align:center;color:var(--mute);letter-spacing:.02em;margin-top:1px;}
+.intent-bar{display:flex;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:7px;}
+.intent-btn{flex:1;border:none;border-radius:8px;padding:8px 4px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--mute);transition:all .15s ease;display:flex;align-items:center;justify-content:center;gap:4px;}
+.intent-btn svg{width:12px;height:12px;}
+.intent-btn.sel-flip{background:var(--flip-bg);color:var(--flip);}
+.intent-btn.sel-keep{background:var(--keep-bg);color:var(--keep);}
+.intent-btn.sel-gift{background:var(--gift-bg);color:var(--gift);}
+
+/* ── color tag bar ── */
+.ctag-bar{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 12px;}
+.ctag-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ctag-label{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;flex:none;}
+.ctag-pills{display:flex;gap:5px;flex-wrap:wrap;flex:1;}
+.ctag-pill{border:none;border-radius:20px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;cursor:pointer;opacity:.4;transition:opacity .12s ease;}
+.ctag-pill.active{opacity:1;box-shadow:0 0 0 1.5px rgba(19,21,26,.15);}
+.ctag-pill.red{background:#ffd6d6;color:#8b1a1a;}
+.ctag-pill.yellow{background:#fff3b0;color:#6b5000;}
+.ctag-pill.green{background:#d6f4e0;color:#0a5c2a;}
+.ctag-pill.blue{background:#d6e8ff;color:#0a3a6b;}
+.ctag-pill.purple{background:#ead6ff;color:#4a0a8b;}
+.ctag-pill.orange{background:#ffe8cc;color:#7a3300;}
+.ctag-active-label{font-family:'Space Mono',monospace;font-size:10.5px;color:var(--flip);font-weight:700;flex:none;}
+
+/* ── coach overlay (pre-scan) ── */
+.coach-banner{background:var(--ink);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;margin-top:4px;}
+.coach-banner p{font-size:12.5px;color:rgba(255,255,255,.8);line-height:1.5;flex:1;}
+.coach-banner b{color:#6ee7a8;}
+.coach-dismiss{background:none;border:none;color:rgba(255,255,255,.4);font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;flex:none;margin-top:2px;text-decoration:underline;}
+
+/* ── empty ── */
+.empty{margin-top:20px;border:1.5px dashed var(--line2);border-radius:16px;padding:22px 18px;text-align:center;}
+.empty-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:17px;margin-bottom:7px;}
+.empty p{font-size:13px;color:var(--mute);line-height:1.55;margin-bottom:5px;}
+.empty-cats{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px;}
+.empty-cat{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--flip);background:var(--flip-bg);padding:3px 10px;border-radius:20px;}
+
+/* ── card ── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--sh);margin-top:14px;animation:rise .3s cubic-bezier(.2,.7,.3,1);}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.photo-wrap{position:relative;width:100%;aspect-ratio:4/3;background:#dde0db;overflow:hidden;}
+.photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.scanning{position:absolute;inset:0;background:rgba(19,21,26,.42);display:grid;place-items:center;}
+.reticle{position:absolute;width:52%;aspect-ratio:1;}
+.reticle span{position:absolute;width:17px;height:17px;border:2.5px solid #6ee7a8;}
+.reticle span:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:5px 0 0 0;}
+.reticle span:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 5px 0 0;}
+.reticle span:nth-child(3){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 5px 0;}
+.reticle span:nth-child(4){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 5px;}
+.scanline{position:absolute;left:8%;right:8%;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#6ee7a8,transparent);box-shadow:0 0 12px 2px rgba(110,231,168,.5);animation:scananim 1.6s ease-in-out infinite;}
+@keyframes scananim{0%{top:16%}50%{top:84%}100%{top:16%}}
+.scan-msg{position:relative;color:#fff;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;background:rgba(19,21,26,.6);padding:8px 14px;border-radius:7px;margin-top:110px;}
+
+/* ── card body ── */
+.cbody{padding:14px 14px 18px;}
+
+/* verdict-only mode banner */
+.quick-result{padding:16px 14px 18px;}
+.quick-verdict{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;letter-spacing:.04em;line-height:1;margin-bottom:8px;}
+.quick-verdict.Buy{color:var(--flip);}
+.quick-verdict.Keep{color:var(--keep);}
+.quick-verdict.Gift{color:var(--gift);}
+.quick-verdict.Pass{color:var(--skip);}
+.quick-range{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin-bottom:6px;}
+.quick-range.Buy,.quick-range.Keep,.quick-range.Gift{color:var(--flip);}
+.quick-range.Pass{color:var(--skip);}
+.quick-why{font-size:14px;color:var(--mute);line-height:1.5;margin-bottom:12px;}
+.quick-expand{background:none;border:1px solid var(--line2);border-radius:8px;padding:7px 12px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--mute);cursor:pointer;}
+.quick-expand:active{background:var(--bg);}
+.quick-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.qm-pill{font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:6px;}
+.qm-pill.margin{background:var(--flip-bg);color:var(--flip);}
+.qm-pill.roi{background:var(--flip-bg);color:var(--flip);}
+.qm-pill.speed{background:var(--amber-bg);color:var(--amber);}
+.qm-pill.speed.hot{background:var(--flip-bg);color:var(--flip);}
+.qm-pill.speed.slow{background:var(--skip-bg);color:var(--skip);}
+.qm-pill.time{background:#f0ede6;color:#5a4a2a;}
+.qm-pill.neg{background:var(--skip-bg);color:var(--skip);}
+.qm-pill.conf{background:var(--bg);color:var(--mute);}
+.qm-pill.day{background:var(--keep-bg);color:var(--keep);}
+
+/* full detail (collapsed by default in quick mode) */
+.full-detail{display:none;}
+.full-detail.open{display:block;}
+
+/* shared card components */
+.dupe-banner{background:var(--dupe-bg);border:1px solid #f0c890;border-radius:10px;padding:10px 12px;display:flex;gap:9px;align-items:flex-start;margin-bottom:11px;}
+.dupe-banner svg{width:14px;height:14px;color:var(--dupe);flex:none;margin-top:2px;}
+.dupe-banner p{font-size:12.5px;color:var(--dupe);line-height:1.5;}
+.intent-flag{display:inline-flex;align-items:center;gap:5px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:9px;}
+.intent-flag.flip{background:var(--flip-bg);color:var(--flip);}
+.intent-flag.keep{background:var(--keep-bg);color:var(--keep);}
+.intent-flag.gift{background:var(--gift-bg);color:var(--gift);}
+.iname{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;line-height:1.18;letter-spacing:-.02em;}
+.icat{display:inline-block;margin-top:7px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--mute);background:var(--bg);border:1px solid var(--line);padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:.03em;}
+.ticket{display:flex;align-items:stretch;margin-top:12px;border-radius:10px;overflow:hidden;border:1px solid var(--line2);}
+.ticket-stub{width:40px;flex:none;background:#f0ede6;border-right:2px dashed #c9c1b0;display:grid;place-items:center;}
+.ticket-hole{width:13px;height:13px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1.5px #bdb4a0;}
+.ticket-main{flex:1;background:#f8f5ee;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.verdict-word{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;letter-spacing:.04em;line-height:1;}
+.verdict-word.Buy{color:var(--flip);}
+.verdict-word.Keep{color:var(--keep);}
+.verdict-word.Gift{color:var(--gift);}
+.verdict-word.Pass{color:var(--skip);}
+.ticket-right{text-align:right;}
+.score-pips{display:flex;gap:4px;justify-content:flex-end;margin-bottom:4px;}
+.pip{width:9px;height:9px;border-radius:50%;border:1.5px solid #c5bcac;background:transparent;}
+.pip.on{background:currentColor;border-color:currentColor;}
+.score-label{font-family:'Space Mono',monospace;font-size:10px;color:#7a7060;}
+.overview{font-size:13.5px;line-height:1.57;color:#2f333b;margin-top:12px;}
+.cond{font-size:12.5px;color:var(--mute);margin-top:7px;line-height:1.5;}
+.cond b{color:var(--ink);font-weight:600;}
+
+/* note boxes */
+.note-box{font-size:12.5px;line-height:1.5;border-radius:8px;padding:8px 11px;margin-top:7px;display:flex;gap:8px;align-items:flex-start;}
+.note-box svg{width:14px;height:14px;flex:none;margin-top:1px;}
+.note-box-body{flex:1;}
+.note-box b{font-weight:600;}
+.note-box.reshoot{background:var(--amber-bg);border:1px solid #e6d080;color:var(--amber);}
+.note-box.ship{background:var(--skip-bg);color:var(--skip);}
+.note-box.bundle{background:var(--bg);color:var(--mute);}
+.note-box.season{background:var(--amber-bg);border:1px solid #e6d080;color:var(--amber);}
+.note-box.redflag{background:var(--skip-bg);border:1px solid #f0cac6;color:var(--skip);}
+.note-box.auth{background:#f0ede6;border:1px solid #d9d0bd;color:#3a2e1a;}
+.note-box.serial{background:var(--keep-bg);border:1px solid #b5d4f4;color:var(--keep);}
+.note-box.negotiate{background:var(--flip-bg);border:1px solid #9fe1cb;color:var(--flip);}
+
+/* price sheet */
+.psheet{margin-top:13px;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.prow{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);}
+.prow:last-child{border-bottom:none;}
+.prow.hl{background:var(--flip-bg);}
+.prow.hl .pk{color:var(--flip);}
+.prow.hl .pv{color:var(--flip);}
+.pk{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);}
+.pv{font-family:'Space Mono',monospace;font-weight:700;font-size:14.5px;color:var(--ink);text-align:right;letter-spacing:-.02em;}
+.psub{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);text-align:right;margin-top:1px;}
+.breakeven-row{background:#f0ede6;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--line);}
+.breakeven-label{font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;color:#5a5040;text-transform:uppercase;letter-spacing:.04em;}
+.breakeven-val{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:#3a2e1a;}
+
+/* time calc */
+.time-calc{background:#f8f5ee;border:1px solid #e6dcc8;border-radius:12px;padding:12px;margin-top:10px;}
+.time-calc-head{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a6a50;margin-bottom:9px;}
+.time-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.time-row:last-child{margin-bottom:0;border-top:1px solid #e6dcc8;padding-top:7px;margin-top:5px;}
+.time-key{font-size:12px;color:#5a4a2a;}
+.time-val{font-family:'Space Mono',monospace;font-size:12.5px;font-weight:700;color:#3a2e1a;}
+.time-val.good{color:var(--flip);}
+.time-val.bad{color:var(--skip);}
+
+/* comps */
+.comps-section{margin-top:12px;}
+.section-head{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.live-badge{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.03em;}
+.live-badge.live{background:var(--flip-bg);color:var(--flip);}
+.live-badge.est{background:var(--amber-bg);color:var(--amber);}
+.comp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:4px;}
+.comp-title{font-size:12px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px;}
+.comp-price{font-family:'Space Mono',monospace;font-size:12.5px;font-weight:700;color:var(--flip);flex:none;}
+.comp-meta{font-size:10px;color:var(--mute);margin-top:1px;}
+.sell-signal{display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:11px;padding:4px 9px;border-radius:6px;margin-top:5px;}
+.sell-signal.hot{background:var(--flip-bg);color:var(--flip);}
+.sell-signal.medium{background:var(--amber-bg);color:var(--amber);}
+.sell-signal.slow{background:var(--skip-bg);color:var(--skip);}
+.sell-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.best-day-row{display:flex;align-items:center;justify-content:space-between;margin-top:7px;background:var(--keep-bg);border-radius:8px;padding:7px 11px;}
+.best-day-label{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--keep);text-transform:uppercase;letter-spacing:.04em;}
+.best-day-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;color:var(--keep);}
+
+/* venue */
+.venues{margin-top:12px;}
+.venue-row{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:9px;border:1px solid var(--line);margin-bottom:5px;}
+.venue-rank{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--mute);width:16px;flex:none;}
+.venue-name{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;flex:1;}
+.venue-why{font-size:11px;color:var(--mute);margin-top:1px;}
+.venue-badge{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;flex:none;}
+.venue-badge.best{background:var(--flip-bg);color:var(--flip);}
+.venue-badge.alt{background:var(--amber-bg);color:var(--amber);}
+
+/* auth checklist */
+.auth-checklist{margin-top:6px;}
+.auth-check{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);}
+.auth-check:last-child{border-bottom:none;}
+.auth-box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line2);flex:none;cursor:pointer;display:grid;place-items:center;margin-top:1px;}
+.auth-box.done{background:var(--flip);border-color:var(--flip);}
+.auth-box svg{display:none;width:10px;height:10px;color:#fff;}
+.auth-box.done svg{display:block;}
+.auth-text{font-size:12.5px;line-height:1.4;color:var(--ink);}
+.auth-text.done{text-decoration:line-through;color:var(--mute);}
+
+.reasoning{display:flex;gap:8px;margin-top:12px;font-size:13px;line-height:1.55;color:#2f333b;}
+.reasoning .arr{color:var(--ink);font-weight:700;flex:none;}
+.conf-row{margin-top:8px;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--mute);display:flex;align-items:center;gap:6px;}
+.cdot{width:6px;height:6px;border-radius:50%;}
+.conf-high .cdot{background:var(--flip);}
+.conf-medium .cdot{background:var(--amber);}
+.conf-low .cdot{background:var(--skip);}
+
+/* trip log panel */
+.panel{margin-top:13px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+.panel-header{background:var(--ink);color:#fff;padding:11px 14px;}
+.panel-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;}
+.panel-sub{font-family:'Space Mono',monospace;font-size:10px;opacity:.55;margin-top:2px;}
+.trip-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);}
+.tstat{background:var(--surface);padding:10px 11px;}
+.tstat-label{font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);margin-bottom:2px;}
+.tstat-val{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--ink);}
+.best-find{background:var(--flip-bg);border-bottom:1px solid var(--line);padding:9px 14px;display:flex;align-items:center;gap:10px;}
+.best-find-label{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--flip);text-transform:uppercase;letter-spacing:.04em;flex:none;}
+.best-find-name{font-size:13px;font-weight:600;color:var(--flip);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.best-find-roi{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--flip);flex:none;}
+.trip-items{max-height:220px;overflow-y:auto;}
+.trip-item{display:flex;gap:10px;align-items:center;padding:8px 13px;border-bottom:1px solid var(--line);}
+.trip-item:last-child{border-bottom:none;}
+.trip-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:none;background:var(--bg);}
+.trip-mid{flex:1;min-width:0;}
+.trip-iname{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.trip-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);margin-top:2px;}
+.trip-right{text-align:right;flex:none;}
+.trip-verdict{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;display:inline-block;}
+.trip-verdict.Buy,.trip-verdict.Keep,.trip-verdict.Gift{background:var(--flip-bg);color:var(--flip);}
+.trip-verdict.Pass{background:var(--skip-bg);color:var(--skip);}
+.trip-roi{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);margin-top:3px;}
+.panel-btn{width:calc(100% - 26px);margin:10px 13px;background:none;border:1px solid var(--line2);border-radius:9px;padding:9px;font-family:'Space Mono',monospace;font-size:11.5px;font-weight:700;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;}
+.panel-btn svg{width:13px;height:13px;}
+.panel-empty{padding:18px;text-align:center;color:var(--mute);font-size:13px;}
+
+/* batch */
+.batch-label{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin-top:14px;margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.batch-dot{width:7px;height:7px;border-radius:50%;background:var(--flip);animation:pulse 1.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* error */
+.err{margin-top:14px;background:var(--skip-bg);border:1px solid #f0cac6;color:#922b20;border-radius:14px;padding:13px 15px;font-size:13px;line-height:1.5;}
+.err button{margin-top:9px;background:var(--ink);color:#fff;border:none;border-radius:9px;padding:8px 14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;cursor:pointer;}
+
+/* toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(0);z-index:100;background:var(--ink);color:#fff;font-family:'Space Mono',monospace;font-size:12px;padding:9px 14px;border-radius:9px;pointer-events:none;transition:opacity .3s ease,transform .3s ease;}
+.toast.hidden{opacity:0;transform:translateX(-50%) translateY(8px);}
+
+@media(prefers-reduced-motion:reduce){.scanline,.batch-dot{animation:none}.card{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- onboarding modal -->
+<div id="onboardingModal" class="modal-bg" style="display:none;">
+  <div class="modal">
+    <div class="modal-title">Set up Thrift Scout</div>
+    <div class="modal-sub">Three quick questions so every scan is calibrated to you — not a generic reseller.</div>
+
+    <div class="modal-section">
+      <div class="modal-label">Your categories (pick all that apply)</div>
+      <div class="cat-grid" id="catGrid">
+        <div class="cat-chip" data-cat="Vintage clothing">Vintage clothing</div>
+        <div class="cat-chip" data-cat="Sneakers">Sneakers</div>
+        <div class="cat-chip" data-cat="Electronics">Electronics</div>
+        <div class="cat-chip" data-cat="Books">Books</div>
+        <div class="cat-chip" data-cat="Housewares">Housewares</div>
+        <div class="cat-chip" data-cat="Furniture">Furniture</div>
+        <div class="cat-chip" data-cat="Toys">Toys &amp; games</div>
+        <div class="cat-chip" data-cat="Jewelry">Jewelry</div>
+        <div class="cat-chip" data-cat="Sporting goods">Sporting goods</div>
+        <div class="cat-chip" data-cat="Antiques">Antiques</div>
+        <div class="cat-chip" data-cat="Art">Art &amp; frames</div>
+        <div class="cat-chip" data-cat="Media">Media (vinyl/VHS)</div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-label">Your minimum ROI to buy</div>
+      <div class="roi-row">
+        <input class="roi-input" type="number" id="roiInput" value="50" min="0" max="500" step="5">
+        <span class="roi-unit">% return on tag price</span>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-label">Default scan mode</div>
+      <div class="mode-row">
+        <button class="mode-btn sel" data-mode="quick" id="modeQuick">Quick verdict</button>
+        <button class="mode-btn" data-mode="full" id="modeFull">Full detail</button>
+      </div>
+    </div>
+
+    <button class="modal-btn" id="onboardDone">Start scanning</button>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="hrow">
+      <div class="brand">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="2.2"/></svg>
+        </div>
+        <div><div class="appname">Thrift Scout</div><div class="ver">v5 · aisle edition</div></div>
+      </div>
+      <div class="hbtns">
+        <button class="hbtn" id="modeToggle" title="Toggle quick/full mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 13 9 22 9"/><polyline points="11 22 11 15 2 15"/><path d="M22 9 12 19 2 9"/></svg>
+          <span id="modeLabel">Quick</span>
+        </button>
+        <button class="hbtn" id="tripBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Trip
+        </button>
+        <button class="hbtn" id="settingsBtn" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="scan-zone">
+    <button class="scan-btn" id="cameraBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      Scan an item
+    </button>
+    <div class="scan-row">
+      <button class="scan-sec" id="galleryBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Upload photos
+      </button>
+      <button class="scan-sec" id="reviewBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Review trip
+      </button>
+    </div>
+
+    <div>
+      <div class="intent-label">Scanning for —</div>
+      <div class="intent-bar">
+        <button class="intent-btn sel-flip" data-intent="flip" id="iFlip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Resell
+        </button>
+        <button class="intent-btn" data-intent="keep" id="iKeep">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Keep
+        </button>
+        <button class="intent-btn" data-intent="gift" id="iGift">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>Gift
+        </button>
+      </div>
+    </div>
+
+    <!-- color tag bar -->
+    <div class="ctag-bar">
+      <div class="ctag-row">
+        <span class="ctag-label">Tag sale</span>
+        <div class="ctag-pills">
+          <button class="ctag-pill red" data-color="red" data-pct="50">Red 50%</button>
+          <button class="ctag-pill yellow" data-color="yellow" data-pct="50">Yellow 50%</button>
+          <button class="ctag-pill green" data-color="green" data-pct="30">Green 30%</button>
+          <button class="ctag-pill blue" data-color="blue" data-pct="50">Blue 50%</button>
+          <button class="ctag-pill purple" data-color="purple" data-pct="50">Purple 50%</button>
+          <button class="ctag-pill orange" data-color="orange" data-pct="50">Orange 50%</button>
+        </div>
+        <span class="ctag-active-label" id="ctagPct" style="display:none;"></span>
+      </div>
+    </div>
+
+    <!-- pre-scan coaching (first 5 uses) -->
+    <div class="coach-banner" id="coachBanner" style="display:none;">
+      <p><b>Better scans = better verdicts.</b> Fill the frame with the item, include the price tag if visible, and use natural light over store fluorescents.</p>
+      <button class="coach-dismiss" id="coachDismiss">Got it</button>
+    </div>
+  </div>
+
+  <div id="empty" class="empty">
+    <div class="empty-title">Ready to scout</div>
+    <p>Scan an item for a verdict in under 10 seconds. The result is calibrated to your margin floor and your categories.</p>
+    <div id="emptyCats" class="empty-cats"></div>
+  </div>
+
+  <div id="tripWrap" style="display:none;"></div>
+  <div id="result"></div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+<input type="file" accept="image/*" capture="environment" id="camInput" hidden>
+<input type="file" accept="image/*" multiple id="galInput" hidden>
+
+<script>
+// ── persistent prefs ──
+var PREFS_KEY='ts5_prefs';
+var HIST_KEY='ts5_history';
+
+function loadPrefs(){
+  try{var s=localStorage.getItem(PREFS_KEY);return s?JSON.parse(s):{categories:[],roiFloor:50,scanMode:'quick',scanCount:0};}
+  catch(e){return{categories:[],roiFloor:50,scanMode:'quick',scanCount:0};}
+}
+function savePrefs(){try{localStorage.setItem(PREFS_KEY,JSON.stringify(prefs));}catch(e){}}
+function loadScanHistory(){try{var s=localStorage.getItem(HIST_KEY);return s?JSON.parse(s):[]; }catch(e){return[];}}
+function saveScanHistory(){try{localStorage.setItem(HIST_KEY,JSON.stringify(scanHistory.slice(0,200)));}catch(e){}}
+
+var prefs=loadPrefs();
+var scanHistory=loadScanHistory();
+var intent='flip';
+var activeColorTag=null;
+var scanMode=prefs.scanMode||'quick';
+
+// ── elements ──
+var $=function(id){return document.getElementById(id);};
+var cameraBtn=$('cameraBtn'),galleryBtn=$('galleryBtn'),reviewBtn=$('reviewBtn');
+var camInput=$('camInput'),galInput=$('galInput');
+var resultEl=$('result'),emptyEl=$('empty'),tripWrap=$('tripWrap');
+var tripBtn=$('tripBtn'),modeToggle=$('modeToggle'),modeLabel=$('modeLabel'),settingsBtn=$('settingsBtn');
+var toastEl=$('toast');
+var onboardingModal=$('onboardingModal');
+
+// ── onboarding ──
+var selectedCats=new Set(prefs.categories||[]);
+function showOnboarding(){
+  onboardingModal.style.display='flex';
+  $('roiInput').value=prefs.roiFloor||50;
+  document.querySelectorAll('.cat-chip').forEach(function(c){
+    if(selectedCats.has(c.dataset.cat))c.classList.add('sel');
+  });
+}
+if(!prefs.categories||prefs.categories.length===0){
+  setTimeout(function(){showOnboarding();},300);
+}
+settingsBtn.addEventListener('click',showOnboarding);
+
+document.querySelectorAll('.cat-chip').forEach(function(c){
+  c.addEventListener('click',function(){
+    c.classList.toggle('sel');
+    if(c.classList.contains('sel'))selectedCats.add(c.dataset.cat);
+    else selectedCats.delete(c.dataset.cat);
+  });
+});
+document.querySelectorAll('.mode-btn').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.mode-btn').forEach(function(x){x.classList.remove('sel');});
+    b.classList.add('sel');scanMode=b.dataset.mode;
+  });
+});
+$('onboardDone').addEventListener('click',function(){
+  prefs.categories=Array.from(selectedCats);
+  prefs.roiFloor=parseInt($('roiInput').value)||50;
+  prefs.scanMode=scanMode;
+  savePrefs();
+  onboardingModal.style.display='none';
+  updateEmptyCats();
+  modeLabel.textContent=scanMode==='quick'?'Quick':'Full';
+});
+
+function updateEmptyCats(){
+  var el=$('emptyCats');
+  if(!el)return;
+  el.innerHTML=prefs.categories.slice(0,6).map(function(c){return'<span class="empty-cat">'+esc(c)+'</span>';}).join('');
+}
+updateEmptyCats();
+
+// ── scan mode toggle ──
+modeLabel.textContent=scanMode==='quick'?'Quick':'Full';
+modeToggle.classList.toggle('active',scanMode==='full');
+modeToggle.addEventListener('click',function(){
+  scanMode=scanMode==='quick'?'full':'quick';
+  modeLabel.textContent=scanMode==='quick'?'Quick':'Full';
+  modeToggle.classList.toggle('active',scanMode==='full');
+  prefs.scanMode=scanMode;savePrefs();
+  showToast(scanMode==='quick'?'Quick verdict mode':'Full detail mode');
+});
+
+// ── intent selector ──
+document.querySelectorAll('.intent-btn').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.intent-btn').forEach(function(x){x.classList.remove('sel-flip','sel-keep','sel-gift');});
+    intent=b.dataset.intent;b.classList.add('sel-'+intent);
+  });
+});
+
+// ── color tag ──
+document.querySelectorAll('.ctag-pill').forEach(function(p){
+  p.addEventListener('click',function(){
+    var already=p.classList.contains('active');
+    document.querySelectorAll('.ctag-pill').forEach(function(x){x.classList.remove('active');});
+    if(already){activeColorTag=null;$('ctagPct').style.display='none';}
+    else{p.classList.add('active');activeColorTag={color:p.dataset.color,pct:parseInt(p.dataset.pct)};$('ctagPct').textContent=p.dataset.pct+'% off';$('ctagPct').style.display='inline';}
+  });
+});
+
+// ── pre-scan coaching ──
+var COACH_KEY='ts5_coached';
+function checkCoach(){
+  var shown=parseInt(localStorage.getItem(COACH_KEY)||'0');
+  if(shown<5){$('coachBanner').style.display='flex';}
+}
+$('coachDismiss').addEventListener('click',function(){
+  $('coachBanner').style.display='none';
+  var n=parseInt(localStorage.getItem(COACH_KEY)||'0')+1;
+  localStorage.setItem(COACH_KEY,n);
+});
+checkCoach();
+
+// ── inputs ──
+cameraBtn.addEventListener('click',function(){camInput.click();});
+galleryBtn.addEventListener('click',function(){galInput.click();});
+camInput.addEventListener('change',function(e){if(e.target.files[0])handleBatch([e.target.files[0]]);camInput.value='';});
+galInput.addEventListener('change',function(e){if(e.target.files.length)handleBatch(Array.from(e.target.files));galInput.value='';});
+
+// ── trip panel ──
+tripBtn.addEventListener('click',function(){
+  var open=tripWrap.style.display!=='none';
+  tripWrap.style.display=open?'none':'block';
+  tripBtn.classList.toggle('active',!open);
+  if(!open)renderTrip();
+});
+reviewBtn.addEventListener('click',function(){
+  tripWrap.style.display='block';tripBtn.classList.add('active');renderTrip();
+  tripWrap.scrollIntoView({behavior:'smooth'});
+});
+
+var SCAN_MSGS=['Reading the rack...','Pulling live comps...','Checking sell-through...','Sizing up the margin...','Appraising the find...','Checking red flags...'];
+
+// ── dupe detection ──
+function findDupe(item,category){
+  for(var i=0;i<scanHistory.length;i++){
+    var h=scanHistory[i];
+    var hcat=(h.data.category||'').toLowerCase();
+    var hitem=(h.data.item||'').toLowerCase();
+    var nitem=(item||'').toLowerCase();
+    var ncat=(category||'').toLowerCase();
+    if(hcat&&ncat&&hcat===ncat&&hitem!==nitem)return h;
+    var words=nitem.split(/\s+/).filter(function(w){return w.length>3;});
+    if(words.length&&words.filter(function(w){return hitem.includes(w);}).length>=Math.min(2,words.length))return h;
+  }
+  return null;
+}
+
+// ── helpers ──
+function money(n){return n==null||isNaN(n)?null:'$'+Math.round(Number(n)).toLocaleString();}
+function parseTag(s){if(!s)return null;var m=String(s).replace(/,/g,'').match(/([\d]+\.?\d*)/);return m?parseFloat(m[1]):null;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]);});}
+function verdictOf(d){var ok=['Buy','Keep','Gift','Pass'];return ok.includes(d.verdict)?d.verdict:(d.verdict==='Skip'?'Pass':'Buy');}
+function iColor(i){return i==='keep'?'keep':i==='gift'?'gift':'flip';}
+function pips(n,cv){n=Math.max(0,Math.min(5,parseInt(n)||0));var s='';for(var i=1;i<=5;i++)s+='<span class="pip '+(i<=n?'on':'')+'" style="color:var(--'+cv+')"></span>';return s;}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function showToast(msg,dur){dur=dur||2200;toastEl.textContent=msg;toastEl.classList.remove('hidden');clearTimeout(toastEl._t);toastEl._t=setTimeout(function(){toastEl.classList.add('hidden');},dur);}
+function resizeImage(file,maxDim){maxDim=maxDim||1100;return new Promise(function(res,rej){var rd=new FileReader();rd.onload=function(){var img=new Image();img.onload=function(){var w=img.width,h=img.height;if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.82));};img.onerror=rej;img.src=rd.result;};rd.onerror=rej;rd.readAsDataURL(file);});}
+
+function bestDayToList(category){
+  var cat=(category||'').toLowerCase();
+  if(cat.match(/cloth|shirt|dress|jacket|coat|jean|pants|fashion|apparel|vintage/))return'Sunday or Thursday';
+  if(cat.match(/shoe|sneak|boot|footwear/))return'Friday or Saturday';
+  if(cat.match(/electr|phone|tablet|laptop|camera|console|game/))return'Sunday or Monday';
+  if(cat.match(/furniture|sofa|chair|table|desk/))return'Friday or Saturday';
+  if(cat.match(/book|vinyl|record|media|dvd|vhs/))return'Wednesday or Sunday';
+  if(cat.match(/toy|game|lego|doll/))return'Saturday or Friday';
+  if(cat.match(/kitchen|cookware|dish|appliance/))return'Sunday or Saturday';
+  return'Sunday (highest overall traffic)';
+}
+
+// ── listing time estimate by category ──
+function listingMins(category){
+  var cat=(category||'').toLowerCase();
+  if(cat.match(/cloth|shirt|dress|jacket|jean|fashion/))return 18;
+  if(cat.match(/shoe|sneak|boot/))return 12;
+  if(cat.match(/electr|phone|tablet|laptop|camera/))return 22;
+  if(cat.match(/furniture/))return 30;
+  if(cat.match(/book|media|dvd|vhs/))return 6;
+  if(cat.match(/kitchen|cookware/))return 14;
+  return 15;
+}
+
+// ── auth checklists by category ──
+var AUTH_CHECKS={
+  'Vintage clothing':['Check label — authentic vintage has woven labels, not heat-transfers','Look for union tags (ILGWU, ACWA) which authenticate pre-1970s US garments','Inspect stitching — vintage uses chain stitch, not lockstitch','Check zipper brand (YKK post-1960, Talon or Crown earlier)'],
+  'Sneakers':['Match style and colorway against original retail — check Nike/Adidas official archive','Inspect logo proportions and font — fakes have thicker or thinner text','Check box label — SKU should match the shoe tongue tag','Smell the shoe — authentic leather has a distinct smell; glue-heavy fakes do not'],
+  'Electronics':['Check serial number on device against sticker on box if present','Power on and verify all buttons, ports, and displays function','Check for water damage indicators (red/pink dots near charging port)','Verify model number matches the advertised specs online'],
+  'Jewelry':['Look for hallmarks — gold (10K/14K/18K/24K), silver (925/sterling), platinum (950)','Use magnet test — real gold and silver are not magnetic','Check clasps and settings for signs of plating wear (base metal showing)','Weigh if possible — precious metals are heavier than base metal fakes'],
+  'Antiques':['Check for machine-made joints vs hand-cut dovetails (pre-1860 = hand-cut)','Look for natural aging — patina should be consistent, not applied in patches','Check hardware — hand-forged screws are irregular; machine screws post-1850','Research maker marks against antique database before buying']
+};
+function getAuthChecks(category,item){
+  var cat=(category||'').toLowerCase();
+  var itm=(item||'').toLowerCase();
+  if(itm.match(/sneak|nike|adidas|jordan|yeezy|new balance/)||cat.match(/shoe|sneak/))return AUTH_CHECKS['Sneakers'];
+  if(itm.match(/gold|silver|ring|necklace|bracelet|watch/)||cat.match(/jewel/))return AUTH_CHECKS['Jewelry'];
+  if(cat.match(/electr|phone|tablet|laptop|camera/))return AUTH_CHECKS['Electronics'];
+  if(cat.match(/antique|vintage furniture|collectible/))return AUTH_CHECKS['Antiques'];
+  if(cat.match(/cloth|shirt|dress|jacket|fashion|apparel/))return AUTH_CHECKS['Vintage clothing'];
+  return null;
+}
+
+// ── build prompt ──
+function buildPrompt(intentMode,tagDiscount){
+  var catCtx=prefs.categories.length?'User specializes in: '+prefs.categories.join(', ')+'. ':'';
+  var roiCtx='User minimum ROI threshold: '+prefs.roiFloor+'%. ';
+  var discountNote=tagDiscount?'COLOR TAG DISCOUNT ACTIVE: '+tagDiscount+'% off today. Apply this discount to all tag-based margin calculations. ':'';
+  var ctx={
+    flip:'Scanning to RESELL for profit. Focus on margin vs user ROI floor, sell-through speed, and platform.',
+    keep:'Scanning to KEEP personally. Focus on item quality, personal value, and whether it\'s worth the price vs buying new.',
+    gift:'Scanning as a potential GIFT. Focus on gift appeal, perceived value at thrift price, and recipient fit.'
+  };
+  return catCtx+roiCtx+discountNote+'\nSCAN CONTEXT: '+ctx[intentMode]+
+  '\nYou are an expert thrift appraiser. Analyze this item from a live thrift store photo. Return ONLY valid JSON:\n'+
+  '{"item":"specific name brand model","category":"1-3 words","overview":"2-3 sentences","condition":"brief","needs_reshoot":true/false,"reshoot_tip":"tip or null",'+
+  '"thrift_tag_price":"$X.XX or null","original_price":"$X or range","resale_low":number,"resale_high":number,'+
+  '"roi_percent":integer/null,"sell_through":"hot"/"medium"/"slow","sell_through_note":"one sentence","season_note":"timing advice or null",'+
+  '"best_venue":"eBay"/"Poshmark"/"Mercari"/"Facebook Marketplace"/"Depop"/"Etsy","venue_reason":"one sentence","second_venue":"venue or null",'+
+  '"shipping_risk":true/false,"shipping_note":"note or null","lot_opportunity":true/false,"lot_note":"idea or null",'+
+  '"negotiation_floor":"max tag price to pay and hit ROI floor, as string like \'$8 max\', or null if tag visible and math works",'+
+  '"serial_model_note":"if serial/model number visible in photo, describe what it confirms about the item, else null",'+
+  '"red_flags":["flag1"],"rating":1-5,"verdict":"Buy"/"Keep"/"Gift"/"Pass","reasoning":"one sharp sentence","confidence":"high"/"medium"/"low"}';
+}
+
+// ── fetch appraisal + comps ──
+function fetchWithComps(base64,intentMode,tagDiscount){
+  return fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:base64}},
+        {type:'text',text:buildPrompt(intentMode,tagDiscount)}
+      ]}]})
+  }).then(function(r){if(!r.ok)throw new Error('Server busy. Try again.');return r.json();})
+  .then(function(data){
+    var text=(data.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    var clean=text.replace(/```json/gi,'').replace(/```/g,'').trim();
+    var appraisal;
+    try{appraisal=JSON.parse(clean);}
+    catch(e){var m=clean.match(/\{[\s\S]*\}/);if(m)appraisal=JSON.parse(m[0]);else throw new Error("Couldn't parse result. Try a clearer photo.");}
+
+    return fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:'Search eBay sold listings for: '+((appraisal.item||appraisal.category||'thrift item')+' sold site:ebay.com')+'\nReturn ONLY a JSON array of up to 4 comps:\n[{"title":"title","price":14.99,"sold_days_ago":5,"source":"eBay"}]\nNo markdown. Just the array.'}]})
+    }).then(function(r){if(!r.ok)return{content:[{type:'text',text:'[]'}]};return r.json();})
+    .then(function(cd){
+      var ct=(cd.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+      var lc=[];
+      try{var arr=ct.replace(/```json/gi,'').replace(/```/g,'').trim().match(/\[[\s\S]*\]/);if(arr)lc=JSON.parse(arr[0]);}catch(e){}
+      if(!lc.length){
+        var lo=Number(appraisal.resale_low),hi=Number(appraisal.resale_high),mid2=(lo+hi)/2;
+        lc=[{title:(appraisal.item||appraisal.category)+' good condition',price:Math.round(hi*.95),sold_days_ago:4,source:'est.'},{title:(appraisal.item||appraisal.category)+' used',price:Math.round(mid2),sold_days_ago:9,source:'est.'},{title:(appraisal.category||appraisal.item)+' thrift find',price:Math.round(lo*1.05),sold_days_ago:14,source:'est.'}];
+      }
+      return{appraisal:appraisal,liveComps:lc};
+    });
+  });
+}
+
+// ── batch handler ──
+function handleBatch(files){
+  emptyEl.style.display='none';
+  // increment coach counter
+  var coached=parseInt(localStorage.getItem(COACH_KEY)||'0');
+  if(coached>=5)$('coachBanner').style.display='none';
+  var ci=intent,tagDiscount=activeColorTag?activeColorTag.pct:null;
+  var isBatch=files.length>1;
+  var batchId='batch-'+Date.now();
+  if(isBatch){
+    var bw=document.createElement('div');bw.id=batchId;
+    var hdr=document.createElement('div');hdr.className='batch-label';
+    hdr.innerHTML='<span class="batch-dot" id="'+batchId+'-dot"></span><span id="'+batchId+'-label">Scanning '+files.length+' items...</span>';
+    bw.appendChild(hdr);
+    if(resultEl.firstChild)resultEl.insertBefore(bw,resultEl.firstChild);else resultEl.appendChild(bw);
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  var completed=0;
+  files.forEach(function(file,idx){
+    var slot=document.createElement('div');
+    var pr=new FileReader();
+    pr.onload=function(ev){
+      var prev=ev.target.result;
+      var msg=SCAN_MSGS[Math.floor(Math.random()*SCAN_MSGS.length)];
+      slot.innerHTML='<div class="card" style="margin-top:'+(idx===0&&!isBatch?'0':'12px')+'"><div class="photo-wrap"><img src="'+prev+'" alt=""><div class="scanning"><div class="reticle"><span></span><span></span><span></span><span></span></div><div class="scanline"></div><div class="scan-msg">'+msg+'</div></div></div></div>';
+      if(isBatch)document.getElementById(batchId).appendChild(slot);
+      else{resultEl.innerHTML='';resultEl.appendChild(slot);window.scrollTo({top:0,behavior:'smooth'});}
+      resizeImage(file).then(function(dataUrl){
+        return fetchWithComps(dataUrl.split(',')[1],ci,tagDiscount).then(function(result){
+          var d=result.appraisal,lc=result.liveComps||[];
+          var dupe=findDupe(d.item,d.category);
+          var itemId=uid();
+          var entry={data:d,img:dataUrl,intent:ci,liveComps:lc,ts:Date.now(),itemId:itemId};
+          var t=document.createElement('div');
+          renderResultInto(d,dataUrl,ci,dupe,lc,t);
+          if(isBatch){var inner=t.querySelector('.card');if(inner)inner.style.marginTop=idx===0?'0':'12px';slot.innerHTML=t.innerHTML;}
+          else{resultEl.innerHTML=t.innerHTML;wireEvents(resultEl);}
+          if(isBatch)wireEvents(slot);
+          scanHistory.unshift(entry);saveScanHistory();
+          prefs.scanCount=(prefs.scanCount||0)+1;savePrefs();
+          if(tripWrap.style.display!=='none')renderTrip();
+          completed++;
+          if(isBatch){var lbl=$(batchId+'-label');if(lbl){if(completed===files.length){lbl.textContent=files.length+' items scanned';var dot=$(batchId+'-dot');if(dot)dot.style.animation='none';}else lbl.textContent=completed+' of '+files.length+' done...';}}
+        });
+      }).catch(function(err){slot.innerHTML='<div class="err" style="margin-top:12px;">'+(file.name||'Item')+': '+(err.message||'Analysis failed')+'<br><button onclick="this.closest(\'.err\').remove()">Dismiss</button></div>';completed++;});
+    };
+    pr.readAsDataURL(file);
+  });
+}
+
+// ── render ──
+function renderResultInto(d,img,intentMode,dupe,liveComps,container){
+  var tagNum=parseTag(d.thrift_tag_price);
+  var discount=activeColorTag?activeColorTag.pct:0;
+  var effectiveTag=tagNum?tagNum*(1-discount/100):null;
+  var lo=Number(d.resale_low),hi=Number(d.resale_high);
+  var mid=(!isNaN(lo)&&!isNaN(hi))?(lo+hi)/2:lo;
+  var v=verdictOf(d);
+  var ic=iColor(intentMode);
+  var rating=parseInt(d.rating)||0;
+  var conf=['high','medium','low'].includes(d.confidence)?d.confidence:'medium';
+
+  // margin math
+  var marginLo=effectiveTag&&!isNaN(lo)?Math.round(lo-effectiveTag):null;
+  var marginHi=effectiveTag&&!isNaN(hi)?Math.round(hi-effectiveTag):null;
+  var roi=effectiveTag&&!isNaN(mid)?Math.round(((mid-effectiveTag)/effectiveTag)*100):d.roi_percent;
+  var roiMeetsFloor=roi!=null&&roi>=prefs.roiFloor;
+
+  // time-to-profit calc
+  var estListMins=listingMins(d.category);
+  var netPerItem=marginLo!=null?((marginLo+marginHi)/2):null;
+  var hrlyRate=netPerItem!=null&&estListMins>0?Math.round((netPerItem/(estListMins/60))):null;
+  var timeWorthIt=hrlyRate!=null&&hrlyRate>=15;
+
+  // auth checks
+  var authChecks=getAuthChecks(d.category,d.item);
+  var bestDay=bestDayToList(d.category);
+
+  // break-even if no tag visible
+  var beMax=(!tagNum&&!isNaN(lo)&&!isNaN(hi)&&prefs.roiFloor)?Math.round(mid/(1+prefs.roiFloor/100)):null;
+
+  // QUICK MODE output
+  if(scanMode==='quick'){
+    var resaleStr=(!isNaN(lo)&&!isNaN(hi))?(money(lo)+' – '+money(hi)):(!isNaN(lo)?money(lo):'—');
+    var metaPills='';
+    if(effectiveTag&&marginLo!=null){
+      var sign=marginLo>=0?'+':'';
+      metaPills+='<span class="qm-pill '+(marginLo>=0?'margin':'neg')+'">'+sign+money(marginLo)+' – '+sign+money(marginHi)+'</span>';
+    }
+    if(roi!=null)metaPills+='<span class="qm-pill '+(roiMeetsFloor?'roi':'neg')+'">'+roi+'% ROI'+(roiMeetsFloor?' ✓':' ✗ below floor')+'</span>';
+    var sc=d.sell_through||'medium';
+    metaPills+='<span class="qm-pill speed '+sc+'">'+{'hot':'🔥 Fast sell','medium':'Moderate sell','slow':'Slow sell'}[sc]+'</span>';
+    if(hrlyRate!=null)metaPills+='<span class="qm-pill time '+(timeWorthIt?'':'neg')+'">~$'+hrlyRate+'/hr to list</span>';
+    if(beMax)metaPills+='<span class="qm-pill margin">Max tag: '+money(beMax)+'</span>';
+    if(d.negotiation_floor)metaPills+='<span class="qm-pill negotiate">Offer '+esc(d.negotiation_floor)+'</span>';
+    metaPills+='<span class="qm-pill day">List '+esc(bestDay)+'</span>';
+    metaPills+='<span class="qm-pill conf">'+conf+' confidence</span>';
+
+    var dupeQ=dupe?'<div class="dupe-banner" style="margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><p><b>Dupe alert.</b> Similar item scanned earlier: "'+esc(dupe.data.item||dupe.data.category)+'"</p></div>':'';
+
+    container.innerHTML='<div class="card">'+
+      '<div class="photo-wrap"><img src="'+img+'" alt="item"></div>'+
+      '<div class="quick-result">'+
+        dupeQ+
+        '<div class="quick-verdict '+v+'">'+v+'</div>'+
+        '<div class="quick-range '+v+'">'+resaleStr+'</div>'+
+        '<div class="quick-why">'+esc(d.item||'Item')+' · '+esc(d.reasoning||'')+'</div>'+
+        '<div class="quick-meta">'+metaPills+'</div>'+
+        (authChecks?'<div style="margin-top:10px;"><button class="quick-expand" id="authToggle">Authenticity checklist ↓</button><div id="authPanel" style="display:none;margin-top:8px;"></div></div>':'')+
+        '<div style="margin-top:10px;"><button class="quick-expand" id="expandDetail">Full detail ↓</button></div>'+
+        '<div class="full-detail" id="fullDetail">'+buildFullDetail(d,img,intentMode,dupe,liveComps,effectiveTag,marginLo,marginHi,roi,bestDay,beMax,authChecks,hrlyRate,timeWorthIt,estListMins,netPerItem)+'</div>'+
+      '</div>'+
+    '</div>';
+    return;
+  }
+
+  // FULL MODE output
+  container.innerHTML='<div class="card">'+
+    '<div class="photo-wrap"><img src="'+img+'" alt="item"></div>'+
+    '<div class="cbody">'+buildFullDetail(d,img,intentMode,dupe,liveComps,effectiveTag,marginLo,marginHi,roi,bestDay,beMax,authChecks,hrlyRate,timeWorthIt,estListMins,netPerItem)+'</div>'+
+  '</div>';
+}
+
+function buildFullDetail(d,img,intentMode,dupe,liveComps,effectiveTag,marginLo,marginHi,roi,bestDay,beMax,authChecks,hrlyRate,timeWorthIt,estListMins,netPerItem){
+  var lo=Number(d.resale_low),hi=Number(d.resale_high);
+  var v=verdictOf(d);
+  var ic=iColor(intentMode);
+  var rating=parseInt(d.rating)||0;
+  var conf=['high','medium','low'].includes(d.confidence)?d.confidence:'medium';
+  var tagNum=parseTag(d.thrift_tag_price);
+  var discount=activeColorTag?activeColorTag.pct:0;
+
+  var flagLabel=intentMode==='keep'?'Keeping':intentMode==='gift'?'As a gift':'To resell';
+
+  var dupeHtml=dupe?'<div class="dupe-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><p><b>Possible duplicate.</b> Similar to "'+esc(dupe.data.item||dupe.data.category)+'" scanned earlier.</p></div>':'';
+
+  // notes
+  var notesHtml='';
+  if(d.needs_reshoot)notesHtml+='<div class="note-box reshoot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="note-box-body"><b>Better photo needed.</b> '+(d.reshoot_tip||'Get the full item and tag in frame.')+'</div></div>';
+  if(d.red_flags&&d.red_flags.length)notesHtml+='<div class="note-box redflag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="note-box-body"><b>Red flags:</b> '+esc(d.red_flags.join(' · '))+'</div></div>';
+  if(d.serial_model_note)notesHtml+='<div class="note-box serial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><div class="note-box-body"><b>Serial/model:</b> '+esc(d.serial_model_note)+'</div></div>';
+  if(d.negotiation_floor)notesHtml+='<div class="note-box negotiate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><div class="note-box-body"><b>Negotiation floor:</b> '+esc(d.negotiation_floor)+' to hit your '+prefs.roiFloor+'% ROI floor.</div></div>';
+  if(d.shipping_risk&&d.shipping_note)notesHtml+='<div class="note-box ship"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m1 9 2-2m0 0 7-7 7 7-7 7-7-7Zm2-2h10v12H3z"/></svg><div class="note-box-body"><b>Shipping risk:</b> '+esc(d.shipping_note)+'</div></div>';
+  if(d.lot_opportunity&&d.lot_note)notesHtml+='<div class="note-box bundle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m8 21 4-4 4 4M12 17v4"/></svg><div class="note-box-body"><b>Bundle idea:</b> '+esc(d.lot_note)+'</div></div>';
+  if(d.season_note)notesHtml+='<div class="note-box season"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg><div class="note-box-body"><b>Seasonal timing:</b> '+esc(d.season_note)+'</div></div>';
+
+  // price sheet
+  var resaleStr=(!isNaN(lo)&&!isNaN(hi))?(money(lo)+' – '+money(hi)):(!isNaN(lo)?money(lo):'—');
+  var priceRows='<div class="prow"><span class="pk">New in box</span><span class="pv">'+esc(d.original_price||'—')+'</span></div>';
+  priceRows+='<div class="prow"><span class="pk">Resale range</span><span class="pv">'+resaleStr+'</span></div>';
+  if(tagNum!==null){
+    var tagDisplay=discount>0?money(tagNum)+' → '+money(effectiveTag)+' ('+discount+'% off)':money(tagNum);
+    priceRows+='<div class="prow"><span class="pk">Thrift tag</span><span class="pv">'+tagDisplay+'</span></div>';
+    if(marginLo!=null)priceRows+='<div class="prow hl"><span class="pk">Margin</span><div><div class="pv">'+(marginLo>=0?'+':'')+money(marginLo)+' – '+(marginHi>=0?'+':'')+money(marginHi)+'</div><div class="psub">'+(roi!=null?roi+'% ROI':'')+(roi!=null&&roi<prefs.roiFloor?' · below your '+prefs.roiFloor+'% floor':roi!=null?' · meets floor':'')+'</div></div></div>';
+  }
+  var beHtml=beMax?'<div class="breakeven-row"><span class="breakeven-label">Max tag to hit '+prefs.roiFloor+'% ROI</span><span class="breakeven-val">'+money(beMax)+'</span></div>':'';
+
+  // time calc
+  var timeHtml='';
+  if(netPerItem!=null&&estListMins>0&&intentMode==='flip'){
+    timeHtml='<div class="time-calc"><div class="time-calc-head">Time-to-profit estimate</div>'+
+      '<div class="time-row"><span class="time-key">Est. net margin</span><span class="time-val">'+money(netPerItem)+'</span></div>'+
+      '<div class="time-row"><span class="time-key">Est. time to list</span><span class="time-val">~'+estListMins+' min</span></div>'+
+      '<div class="time-row"><span class="time-key">Effective hourly rate</span><span class="time-val '+(timeWorthIt?'good':'bad')+'">~$'+hrlyRate+'/hr'+(timeWorthIt?' ✓':' — is it worth it?')+'</span></div>'+
+    '</div>';
+  }
+
+  // comps
+  var compsHtml='';
+  if(liveComps&&liveComps.length){
+    var sc=d.sell_through||'medium';
+    var scLabel={'hot':'🔥 Fast seller','medium':'Moderate demand','slow':'Slow mover'}[sc];
+    var hasLive=liveComps.some(function(c){return c.source&&c.source!=='est.';});
+    compsHtml='<div class="comps-section"><div class="section-head">eBay sold comps <span class="live-badge '+(hasLive?'live':'est')+'">'+(hasLive?'LIVE':'EST.')+'</span></div>';
+    liveComps.forEach(function(c){compsHtml+='<div class="comp-row"><div><div class="comp-title">'+esc(c.title||'')+'</div><div class="comp-meta">~'+(c.sold_days_ago||'?')+' days ago'+(c.source&&c.source!=='est.'?' · '+c.source:'')+'</div></div><div class="comp-price">'+money(c.price)+'</div></div>';});
+    compsHtml+='<span class="sell-signal '+sc+'"><span class="sell-dot"></span>'+scLabel+'</span>';
+    if(d.sell_through_note)compsHtml+='<div style="font-size:12px;color:var(--mute);margin-top:5px;line-height:1.5;">'+esc(d.sell_through_note)+'</div>';
+    compsHtml+='<div class="best-day-row"><span class="best-day-label">Best day to list</span><span class="best-day-val">'+esc(bestDay)+'</span></div>';
+    compsHtml+='</div>';
+  }
+
+  // venue
+  var venueHtml='';
+  if(intentMode==='flip'&&d.best_venue){
+    venueHtml='<div class="venues"><div class="section-head">Best platform</div><div class="venue-row"><span class="venue-rank">#1</span><div style="flex:1"><div class="venue-name">'+esc(d.best_venue)+'</div><div class="venue-why">'+esc(d.venue_reason||'')+'</div></div><span class="venue-badge best">Best</span></div>';
+    if(d.second_venue)venueHtml+='<div class="venue-row"><span class="venue-rank">#2</span><div style="flex:1"><div class="venue-name">'+esc(d.second_venue)+'</div></div><span class="venue-badge alt">Alt</span></div>';
+    venueHtml+='</div>';
+  }
+
+  // auth checklist
+  var authHtml='';
+  if(authChecks){
+    authHtml='<div class="note-box auth" style="flex-direction:column;"><div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><b>Verify before buying</b></div><div class="auth-checklist">'+
+      authChecks.map(function(tip,i){return'<div class="auth-check"><div class="auth-box" data-auth="'+i+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="auth-text" data-authtxt="'+i+'">'+esc(tip)+'</div></div>';}).join('')+
+    '</div></div>';
+  }
+
+  return dupeHtml+
+    '<div class="intent-flag '+ic+'">'+(intentMode==='flip'?'To resell':intentMode==='keep'?'Keeping':'As a gift')+'</div>'+
+    '<div class="iname">'+esc(d.item||'Unidentified item')+'</div>'+
+    '<span class="icat">'+esc(d.category||'—')+'</span>'+
+    '<div class="ticket"><div class="ticket-stub"><div class="ticket-hole"></div></div>'+
+      '<div class="ticket-main"><div class="verdict-word '+v+'">'+v+'</div>'+
+      '<div class="ticket-right"><div class="score-pips" style="color:var(--'+ic+')">'+pips(rating,ic)+'</div><div class="score-label">'+rating+'/5 · '+conf+'</div></div></div></div>'+
+    '<div class="overview">'+esc(d.overview||'')+'</div>'+
+    (d.condition?'<div class="cond"><b>Condition:</b> '+esc(d.condition)+'</div>':'')+
+    notesHtml+
+    '<div class="psheet">'+priceRows+'</div>'+beHtml+
+    timeHtml+compsHtml+venueHtml+authHtml+
+    (d.reasoning?'<div class="reasoning"><span class="arr">›</span><div><b>Why:</b> '+esc(d.reasoning)+'</div></div>':'')+
+    '<div class="conf-row conf-'+conf+'"><span class="cdot"></span>'+conf+' confidence</div>';
+}
+
+function wireEvents(container){
+  // expand full detail
+  var expandBtn=container.querySelector('#expandDetail');
+  if(expandBtn){
+    expandBtn.addEventListener('click',function(){
+      var fd=container.querySelector('#fullDetail');
+      if(!fd)return;
+      var open=fd.classList.toggle('open');
+      expandBtn.textContent=open?'Hide detail ↑':'Full detail ↓';
+    });
+  }
+  // auth toggle in quick mode
+  var authToggle=container.querySelector('#authToggle');
+  if(authToggle){
+    authToggle.addEventListener('click',function(){
+      var panel=container.querySelector('#authPanel');
+      if(!panel)return;
+      var open=panel.style.display==='block';
+      panel.style.display=open?'none':'block';
+      authToggle.textContent=open?'Authenticity checklist ↓':'Authenticity checklist ↑';
+      // populate on first open
+      if(!panel.innerHTML&&!open){
+        var checks=container.querySelectorAll('.full-detail .auth-check');
+        // rebuild from data
+        var fullHtml=container.querySelector('#fullDetail');
+        if(fullHtml){var ac=fullHtml.querySelectorAll('.auth-check');panel.innerHTML='<div class="auth-checklist">'+Array.from(ac).map(function(n){return n.outerHTML;}).join('')+'</div>';}
+      }
+    });
+  }
+  // auth checkboxes
+  container.querySelectorAll('.auth-box[data-auth]').forEach(function(box){
+    box.addEventListener('click',function(){
+      box.classList.toggle('done');
+      var txt=container.querySelector('[data-authtxt="'+box.dataset.auth+'"]');
+      if(txt)txt.classList.toggle('done',box.classList.contains('done'));
+    });
+  });
+}
+
+// ── trip log ──
+function renderTrip(){
+  if(!scanHistory.length){tripWrap.innerHTML='<div class="panel"><div class="panel-header"><div class="panel-title">Trip log</div></div><div class="panel-empty">No scans yet this session.</div></div>';return;}
+  var spend=0,resale=0,acquires=0,bestH=null,bestROI=-Infinity;
+  scanHistory.forEach(function(h){
+    var tag=parseTag(h.data.thrift_tag_price);if(tag)spend+=tag;
+    var lo2=Number(h.data.resale_low),hi2=Number(h.data.resale_high);
+    if(!isNaN(lo2)&&!isNaN(hi2))resale+=(lo2+hi2)/2;
+    if(verdictOf(h.data)!=='Pass')acquires++;
+    if(tag&&!isNaN(lo2)&&!isNaN(hi2)){var r=Math.round(((((lo2+hi2)/2)-tag)/tag)*100);if(r>bestROI){bestROI=r;bestH=h;}}
+  });
+  var html='<div class="panel"><div class="panel-header"><div class="panel-title">Trip log</div><div class="panel-sub">'+scanHistory.length+' scanned · '+acquires+' acquiring</div></div>';
+  html+='<div class="trip-stats"><div class="tstat"><div class="tstat-label">Scanned</div><div class="tstat-val">'+scanHistory.length+'</div></div>';
+  html+='<div class="tstat"><div class="tstat-label">Acquiring</div><div class="tstat-val">'+acquires+'</div></div>';
+  html+='<div class="tstat"><div class="tstat-label">Proj. margin</div><div class="tstat-val">'+(spend>0?((resale-spend)>=0?'+':'')+money(resale-spend):'—')+'</div></div></div>';
+  if(bestH)html+='<div class="best-find"><span class="best-find-label">Best find</span><span class="best-find-name">'+esc(bestH.data.item||'Item')+'</span><span class="best-find-roi">+'+bestROI+'% ROI</span></div>';
+  html+='<div class="trip-items">';
+  scanHistory.forEach(function(h){
+    var d=h.data,v=verdictOf(d);
+    var lo2=Number(d.resale_low),hi2=Number(d.resale_high);
+    var rs=(!isNaN(lo2)&&!isNaN(hi2))?(money(lo2)+'-'+money(hi2)):'—';
+    var tag=parseTag(d.thrift_tag_price);
+    var roiStr='';if(tag&&!isNaN(lo2)&&!isNaN(hi2)){var r=Math.round(((((lo2+hi2)/2)-tag)/tag)*100);roiStr='<div class="trip-roi">'+(r>=0?'+':'')+r+'% ROI</div>';}
+    html+='<div class="trip-item"><img class="trip-thumb" src="'+h.img+'" alt=""><div class="trip-mid"><div class="trip-iname">'+esc(d.item||'Item')+'</div><div class="trip-sub">'+rs+'</div></div><div class="trip-right"><span class="trip-verdict '+v+'">'+v+'</span>'+roiStr+'</div></div>';
+  });
+  html+='</div>';
+  html+='<button class="panel-btn" id="exportCSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>';
+  html+='<button class="panel-btn" id="clearTrip" style="color:var(--skip);">Clear trip</button>';
+  html+='</div>';
+  tripWrap.innerHTML=html;
+  $('exportCSV').addEventListener('click',exportCSV);
+  $('clearTrip').addEventListener('click',function(){if(confirm('Clear this trip?')){scanHistory=[];saveScanHistory();renderTrip();showToast('Trip cleared');}});
+}
+
+function exportCSV(){
+  var rows=[['Item','Category','Intent','Verdict','Rating','Tag','Resale Low','Resale High','ROI %','Venue','Sell-Through','Condition']];
+  scanHistory.forEach(function(h){
+    var d=h.data,tag=parseTag(d.thrift_tag_price);
+    var lo2=Number(d.resale_low),hi2=Number(d.resale_high);
+    var roi='';if(tag&&!isNaN(lo2)&&!isNaN(hi2))roi=Math.round(((((lo2+hi2)/2)-tag)/tag)*100)+'%';
+    rows.push([d.item||'',d.category||'',h.intent||'',verdictOf(d),d.rating||'',tag?money(tag):'',money(lo2)||'',money(hi2)||'',roi,d.best_venue||'',d.sell_through||'',d.condition||'']);
+  });
+  var csv=rows.map(function(r){return r.map(function(v){return'"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='thrift-trip-'+new Date().toISOString().slice(0,10)+'.csv';a.click();showToast('CSV downloaded');
+}
+
+function showError(msg){resultEl.innerHTML='<div class="err">'+esc(msg)+'<br><button onclick="document.getElementById(\'cameraBtn\').click()">Try again</button></div>';}
+</script>
+</body>
+</html>
